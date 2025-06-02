@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Photo Picker</title>
+	  <link href="/styles.css" rel="stylesheet">
+	  <script src="/js/jquery.slim.min.js"></script>
+		<script src="/js/picker.js"></script>
+	  <script src="/qrcode.js"></script>
+
+	</head>
+
+	<body>
+    <div class="text-right">
+      <a href="/disconnect"
+        class="inline-block cursor-pointer py-1 px-2 m-2 border border-gray-400 hover:border-blue-400 hover:bg-blue-50 rounded-md text-sm">
+        Disconnect from Google Photos
+      </a>
+    </div>
+
+    <div class="p-2">
+      <div class="p-8 pt-1 flex">
+        
+        <div class="cursor-pointer flex flex-1 text-center items-center align-middle flex-col bg-blue-50 p-2 hover:underline" onclick="$('#mobile_qr').hide();$('#web_link').show();$('#web_picker_button').removeClass('bg-gray-50');$('#web_picker_button').addClass('bg-blue-50');$('#mobile_picker_button').addClass('bg-gray-50');$('#mobile_picker_button').removeClass('bg-blue-50');" id="web_picker_button">
+          <div class="rounded-2xl bg-gray-200 pb-1 pt-1 pr-2 pl-2 mb-1 text-gray-600 text-xs font-bold">Web Picker</div>
+          <p class="font-bold text-xs text-gray-600">Direct Link</p>
+        </div>
+
+        <div class="cursor-pointer flex flex-1 text-center items-center align-middle flex-col bg-gray-50 p-2 hover:underline" onclick="$('#mobile_qr').show();$('#web_link').hide();$('#web_picker_button').addClass('bg-gray-50');$('#web_picker_button').removeClass('bg-blue-50');$('#mobile_picker_button').removeClass('bg-gray-50');$('#mobile_picker_button').addClass('bg-blue-50');" id="mobile_picker_button">
+          <div class="rounded-2xl bg-gray-200 pb-1 pt-1 pr-2 pl-2 mb-1 text-gray-600 text-xs font-bold">Mobile Picker</div>
+          <p class="font-bold text-xs text-gray-600">QR Code</p>          
+        </div>
+
+      </div>
+
+
+     	<div class="p-8 flex flex-col items-center align-center" id="web_link">
+				<div class="flex flex-col">
+	        <h1 class="text-2xl m-2 mb-4">Visit this link to pick images in a new tab:</h1>
+	        <div>
+	        	<a id="picker_url" target="_blank" class="text-center block pb-1 pt-1 pr-2 pl-2 mb-1 text-blue-600 text-lg font-bold hover:underline cursor-pointer">Google Photo Picker</a>
+	      	</div>
+	      </div>
+
+        <div class="flex align-center items-center">
+        	<p class="m-2 mt-8 text-sm">this page will automatically update when you've completed your selection</p>
+				</div>
+
+      </div>
+
+
+
+     	<div class="p-8 flex flex-col items-center align-center" id="mobile_qr" style="display: none;">
+        <h1 class="text-2xl mb-8">Scan this QR code to select your photos</h1>
+        <div class="flex align-center items-center">
+          <div id="qrcode" class=""></div>
+        </div>
+        
+        <div class="flex flex-col align-center items-center">
+        	<p class="m-2 mt-8 text-sm">this will open Google Photos on your mobile device</p>
+        	<p class="text-sm">this page will automatically update when you've completed your selection</p>
+				</div>
+      </div>
+
+
+
+
+    </div>
+
+	</body>
+
+	<script type="text/javascript">
+
+		$('#picker_url').hide()
+		showQRCode()
+
+		const pollForImages = () => {
+			setTimeout(() => {
+				fetch("/get_session")
+					.then((response) => response.json())
+					.then((responseData) => {
+						if(responseData.mediaItemsSet) {
+							window.location = "/list"
+						} else {
+							pollForImages()
+						}
+					})
+			}, 5000) // default to poll every 5 seconds
+		}
+		pollForImages()
+
+	</script>
+
+</html>

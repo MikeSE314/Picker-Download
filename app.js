@@ -310,7 +310,7 @@ async function downloadMediaItems(mediaItems, user) {
     });
 
     try {
-      console.info(`Downloading file ${index} of ${mediaItems.length}`, item.mediaFile.filename);
+      console.info(`Downloading file ${index+1} of ${mediaItems.length}`, item.mediaFile.filename);
       await downloadMediaFile(item.mediaFile, user, db, id);
     } catch (err) {
       console.error(`Failed to download ${item.mediaFile.filename}: ${err.message}`);

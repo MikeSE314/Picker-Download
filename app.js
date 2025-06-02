@@ -18,6 +18,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import fetch from 'node-fetch';
 import http from 'http';
+import https from 'https';
 
 import passport from 'passport';
 import { Strategy } from 'passport-google-oauth2'
@@ -53,7 +54,15 @@ import { fileURLToPath } from 'url';
 
 const app = express();
 const fileStore = sessionFileStore(session);
-const server = http.Server(app);
+let server = undefined;
+if (config.https) {
+  const key = fs.readFileSync('server.key');
+  const cert = fs.readFileSync('server.crt');
+  server = https.createServer({ key, cert }, app);
+} else {
+  server = http.Server(app);
+}
+
 import axios from 'axios'
 
 

@@ -348,7 +348,7 @@ async function downloadMediaFile(mediaFile, user, db, id, suffix) {
 }
 
 app.get("/clear_incomplete", async (req, res) => {
-  const dbPath = path.join(__dirname, 'downloads', 'downloaded.sqlite');
+  const dbPath = path.join(config.download_directory, 'downloaded.sqlite');
   const db = new sqlite3.Database(dbPath);
   db.run(`DELETE FROM downloaded_files WHERE status = 1`, (err) => {
     if (err) {

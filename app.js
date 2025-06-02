@@ -291,7 +291,7 @@ async function downloadMediaItems(mediaItems, user) {
     );
   });
 
-  for (const item of mediaItems) {
+  for (const [index, item] of mediaItems.entries()) {
     const id = item.id;
 
     const status = await new Promise((resolve, reject) => {
@@ -310,6 +310,7 @@ async function downloadMediaItems(mediaItems, user) {
     });
 
     try {
+      console.info(`Downloading file ${index} of ${mediaItems.length}`, item.mediaFile.filename);
       await downloadMediaFile(item.mediaFile, user, db, id);
     } catch (err) {
       console.error(`Failed to download ${item.mediaFile.filename}: ${err.message}`);
@@ -320,7 +321,6 @@ async function downloadMediaItems(mediaItems, user) {
 }
 
 async function downloadMediaFile(mediaFile, user, db, id) {
-  console.info("Downloading file", downloadMediaFile);
   const folder = path.join(config.download_directory, user.profile.sub);
   await mkdir(folder, { recursive: true });
 
@@ -340,6 +340,7 @@ async function downloadMediaFile(mediaFile, user, db, id) {
       err ? reject(err) : resolve()
     );
   });
+  console.debug("Item downloaded");
 }
 
 app.get("/clear_incomplete", async (req, res) => {

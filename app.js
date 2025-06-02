@@ -310,8 +310,12 @@ async function downloadMediaItems(mediaItems, user) {
     });
 
     try {
-      console.info(`Downloading file ${index+1} of ${mediaItems.length}`, item.mediaFile.filename);
-      await downloadMediaFile(item.mediaFile, user, db, id);
+      console.info(`Downloading file ${index + 1} of ${mediaItems.length}`, item.mediaFile.filename);
+      if (mediaItem.type == "VIDEO") {
+        await downloadMediaFile(item.mediaFile, user, db, id, "=dv");
+      } else {
+        await downloadMediaFile(item.mediaFile, user, db, id, "");
+      }
     } catch (err) {
       console.error(`Failed to download ${item.mediaFile.filename}: ${err.message}`);
     }
@@ -320,14 +324,14 @@ async function downloadMediaItems(mediaItems, user) {
   db.close();
 }
 
-async function downloadMediaFile(mediaFile, user, db, id) {
+async function downloadMediaFile(mediaFile, user, db, id, suffix) {
   const folder = path.join(config.download_directory, user.profile.sub);
   await mkdir(folder, { recursive: true });
 
   const filePath = path.join(folder, mediaFile.filename);
   const url = `${mediaFile.baseUrl}=d`;
 
-  const res = await fetch(url, {
+  const res = await fetch(url+suffix, {
     headers: { Authorization: `Bearer ${user.token}` }
   });
 

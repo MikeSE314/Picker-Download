@@ -311,7 +311,7 @@ async function downloadMediaItems(mediaItems, user) {
 
     try {
       console.info(`Downloading file ${index + 1} of ${mediaItems.length}`, item.mediaFile.filename);
-      if (mediaItem.type == "VIDEO") {
+      if (item.type == "VIDEO") {
         await downloadMediaFile(item.mediaFile, user, db, id, "=dv");
       } else {
         await downloadMediaFile(item.mediaFile, user, db, id, "");

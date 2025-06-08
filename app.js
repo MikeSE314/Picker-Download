@@ -15,7 +15,7 @@
 'use strict';
 
 import bodyParser from 'body-parser';
-import express from 'express';
+import express, { response } from 'express';
 import fetch from 'node-fetch';
 import http from 'http';
 import https from 'https';
@@ -257,6 +257,8 @@ app.get("/fetch_images", async (req, res) => {
   let itemsQuery = `sessionId=${session.id}&pageSize=${pageSize}`
   if ("pageToken" in req.query) {
     itemsQuery += `&pageToken=${req.query['pageToken']}`
+  } else {
+    downloadMediaItems(req.user);
   }
 
   const response = fetch(`https://photospicker.googleapis.com/v1/mediaItems?${itemsQuery}`, {
@@ -268,16 +270,41 @@ app.get("/fetch_images", async (req, res) => {
     json: true
   }).then((response) => response.json())
     .then((responseData) => {
-
-      downloadMediaItems(responseData.mediaItems, req.user);
-
       res.send({ "images": responseData })
-
     })
 
 })
 
-async function downloadMediaItems(mediaItems, user) {
+async function getMediaItems(user) {
+  let mediaItems = [];
+  const pageSize = 100;
+
+  const session = await sessionCache.getItem(user.profile.id)
+  let itemsQuery = `sessionId=${session.id}&pageSize=${pageSize}`;
+  let pagination = ``;
+
+  let resp = { 'nextPageToken': 'initial' }
+  while (resp.nextPageToken) {
+    await fetch(`https://photospicker.googleapis.com/v1/mediaItems?${itemsQuery}${pagination}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + user.token
+      },
+      json: true
+    }).then((response) => response.json())
+      .then((responseData) => {
+        resp = responseData;
+        pagination = `&pageToken=${responseData.nextPageToken}`;
+        mediaItems.push(...responseData.mediaItems);
+      });
+  }
+  return mediaItems;
+}
+
+async function downloadMediaItems(user) {
+  let mediaItems = await getMediaItems(user);
+
   const dbPath = path.join(config.download_directory, 'downloaded.sqlite');
   await mkdir(path.dirname(dbPath), { recursive: true });
 
@@ -344,7 +371,7 @@ async function downloadMediaFile(mediaFile, user, db, id, suffix) {
       err ? reject(err) : resolve()
     );
   });
-  console.debug("Item downloaded");
+  console.info("Item downloaded");
 }
 
 app.get("/clear_incomplete", async (req, res) => {

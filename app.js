@@ -142,6 +142,11 @@ app.use((req, res, next) => {
 });
 
 
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
+
 
 const createNewSession = async (req, res) => {
   const response = fetch("https://photospicker.googleapis.com/v1/sessions", {

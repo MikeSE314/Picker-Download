@@ -318,6 +318,7 @@ async function downloadMediaItems(user) {
     );
   });
 
+  let count = 0;
   for (const [index, item] of mediaItems.entries()) {
     const id = item.id;
 
@@ -328,7 +329,10 @@ async function downloadMediaItems(user) {
       });
     });
 
-    if (status === 2 || status === 1) continue;
+    if (status === 2 || status === 1) {
+      console.info(`Not trying for item ${index + 1}: Status is ${status}`);
+      continue;
+    }
 
     await new Promise((resolve, reject) => {
       db.run(`INSERT OR REPLACE INTO downloaded_files (id, status) VALUES (?, 1)`, [id], (err) =>
@@ -343,12 +347,14 @@ async function downloadMediaItems(user) {
       } else {
         await downloadMediaFile(item.mediaFile, user, db, id, "d");
       }
+      count += 1;
     } catch (err) {
       console.error(`Failed to download ${item.mediaFile.filename}: ${err.message}`);
     }
   }
 
   db.close();
+  console.info(`Downloads finished: ${count} items of ${mediaItems.length}`);
 }
 
 async function downloadMediaFile(mediaFile, user, db, id, suffix) {
